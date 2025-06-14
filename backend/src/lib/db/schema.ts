@@ -1,4 +1,9 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  integer,
+  primaryKey,
+} from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -68,3 +73,27 @@ export const verification = sqliteTable("verification", {
     () => /* @__PURE__ */ new Date()
   ),
 });
+
+export const workShift = sqliteTable("work_shift", {
+  id: text("id").primaryKey(),
+  start: integer("start", { mode: "timestamp" }).notNull(),
+  end: integer("end", { mode: "timestamp" }).notNull(),
+  maxClaims: integer("max_claims").notNull(),
+  description: text("description"),
+});
+
+export const shiftClaims = sqliteTable(
+  "shift_claims",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    shiftId: text("shift_id")
+      .notNull()
+      .references(() => workShift.id, { onDelete: "cascade" }),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .$defaultFn(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.shiftId] })]
+);
