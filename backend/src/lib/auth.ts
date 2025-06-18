@@ -12,5 +12,5 @@ export const auth = betterAuth({
     enabled: true,
   },
   trustedOrigins: ["claimly://"],
-  plugins: [admin(), expo()],
+  plugins: [admin()],
 });

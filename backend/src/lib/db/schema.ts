@@ -4,6 +4,7 @@ import {
   integer,
   primaryKey,
 } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -75,7 +76,9 @@ export const verification = sqliteTable("verification", {
 });
 
 export const workShift = sqliteTable("work_shift", {
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   start: integer("start", { mode: "timestamp" }).notNull(),
   end: integer("end", { mode: "timestamp" }).notNull(),
   maxClaims: integer("max_claims").notNull(),
@@ -97,3 +100,22 @@ export const shiftClaims = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.shiftId] })]
 );
+
+export const userRelations = relations(user, ({ many }) => ({
+  claimedShifts: many(shiftClaims),
+}));
+
+export const workShiftRelations = relations(workShift, ({ many }) => ({
+  claims: many(shiftClaims),
+}));
+
+export const shiftClaimsRelations = relations(shiftClaims, ({ one }) => ({
+  user: one(user, {
+    fields: [shiftClaims.userId],
+    references: [user.id],
+  }),
+  shift: one(workShift, {
+    fields: [shiftClaims.shiftId],
+    references: [workShift.id],
+  }),
+}));
