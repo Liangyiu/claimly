@@ -75,14 +75,14 @@ export const verification = sqliteTable("verification", {
   ),
 });
 
-export const workShift = sqliteTable("work_shift", {
+export const shift = sqliteTable("shift", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
   start: integer("start", { mode: "timestamp" }).notNull(),
   end: integer("end", { mode: "timestamp" }).notNull(),
   maxClaims: integer("max_claims").notNull(),
-  description: text("description"),
 });
 
 export const shiftClaims = sqliteTable(
@@ -93,7 +93,7 @@ export const shiftClaims = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
     shiftId: text("shift_id")
       .notNull()
-      .references(() => workShift.id, { onDelete: "cascade" }),
+      .references(() => shift.id, { onDelete: "cascade" }),
     createdAt: integer("created_at", { mode: "timestamp" })
       .$defaultFn(() => /* @__PURE__ */ new Date())
       .notNull(),
@@ -105,7 +105,7 @@ export const userRelations = relations(user, ({ many }) => ({
   claimedShifts: many(shiftClaims),
 }));
 
-export const workShiftRelations = relations(workShift, ({ many }) => ({
+export const shiftRelations = relations(shift, ({ many }) => ({
   claims: many(shiftClaims),
 }));
 
@@ -114,8 +114,8 @@ export const shiftClaimsRelations = relations(shiftClaims, ({ one }) => ({
     fields: [shiftClaims.userId],
     references: [user.id],
   }),
-  shift: one(workShift, {
+  shift: one(shift, {
     fields: [shiftClaims.shiftId],
-    references: [workShift.id],
+    references: [shift.id],
   }),
 }));

@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin } from "better-auth/plugins";
+import { admin, bearer } from "better-auth/plugins";
 import { db } from "./db";
 import { expo } from "@better-auth/expo";
 
@@ -12,5 +12,5 @@ export const auth = betterAuth({
     enabled: true,
   },
   trustedOrigins: ["claimly://"],
-  plugins: [admin()],
+  plugins: [admin(), bearer()],
 });

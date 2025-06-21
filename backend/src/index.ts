@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { auth } from "./lib/auth";
 import shifts from "./routes/shifts";
-import { logger } from "hono/logger";
+import onError from "./middlewares/on-error";
+import { logger } from "./middlewares/pino-logger";
 
 const app = new Hono<{
   Variables: {
@@ -52,7 +53,11 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
+app.onError(onError);
+
 export default {
   port: 3001,
   fetch: app.fetch,
 };
+
+export type AppType = typeof app;

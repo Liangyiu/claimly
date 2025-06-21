@@ -64,7 +64,7 @@ const Login = (props: Props) => {
   };
 
   return (
-    <View className="flex-1 p-6 bg-secondary/30">
+    <View className="flex-1 p-6">
       <KeyboardAvoidingView
         behavior={"padding"}
         className="flex-1 justify-center"

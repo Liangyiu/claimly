@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import { auth } from "../lib/auth";
 import { db } from "../lib/db";
 import { and, eq, gte, lt } from "drizzle-orm";
-import { shiftClaims, user, workShift } from "../lib/db/schema";
-import { zValidator } from "@hono/zod-validator";
+import { shiftClaims, user, shift } from "../lib/db/schema";
 import { z } from "zod";
+import { zValidator } from "../middlewares/validator-wrapper";
 
 const shifts = new Hono<{
   Variables: {
@@ -12,15 +12,15 @@ const shifts = new Hono<{
     session: typeof auth.$Infer.Session.session | null;
   };
 }>()
-  // .use(async (c, next) => {
-  //   const user = c.get("user");
+  .use(async (c, next) => {
+    const user = c.get("user");
 
-  //   if (!user) {
-  //     return c.json({ error: "Unauthorized" }, 401);
-  //   }
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
 
-  //   await next();
-  // })
+    await next();
+  })
   .get("/", async (c) => {
     const user = c.get("user");
 
@@ -33,17 +33,17 @@ const shifts = new Hono<{
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
       // get shifts for the next week
-      const shifts = await db.query.workShift.findMany({
+      const shifts = await db.query.shift.findMany({
         limit,
         offset,
-        where: and(gte(workShift.start, now), lt(workShift.start, nextWeek)),
+        where: and(gte(shift.start, now), lt(shift.start, nextWeek)),
         orderBy: (shifts) => shifts.start,
       });
 
       // get total number of shifts
-      const total = await db.query.workShift
+      const total = await db.query.shift
         .findMany({
-          where: and(gte(workShift.start, now), lt(workShift.start, nextWeek)),
+          where: and(gte(shift.start, now), lt(shift.start, nextWeek)),
         })
         .then((shifts) => shifts.length);
 
@@ -59,13 +59,13 @@ const shifts = new Hono<{
       });
     }
 
-    const shifts = await db.query.workShift.findMany({
+    const shifts = await db.query.shift.findMany({
       limit,
       offset,
       orderBy: (shifts) => shifts.start,
     });
 
-    const total = await db.query.workShift
+    const total = await db.query.shift
       .findMany()
       .then((shifts) => shifts.length);
 
@@ -82,25 +82,25 @@ const shifts = new Hono<{
   .get("/:id", async (c) => {
     const shiftId = c.req.param("id");
 
-    const shift = await db.query.workShift.findFirst({
-      where: eq(workShift.id, shiftId),
+    const shiftData = await db.query.shift.findFirst({
+      where: eq(shift.id, shiftId),
     });
 
-    if (!shift) {
+    if (!shiftData) {
       return c.json({ error: "Shift not found" }, 404);
     }
 
-    return c.json(shift);
+    return c.json(shiftData);
   })
   .post(
     "/",
     zValidator(
       "json",
       z.object({
+        name: z.string(),
         start: z.number(),
         end: z.number(),
         maxClaims: z.number(),
-        description: z.string().optional(),
       })
     ),
     async (c) => {
@@ -110,19 +110,19 @@ const shifts = new Hono<{
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const { start, end, maxClaims, description } = c.req.valid("json");
+      const { name, start, end, maxClaims } = c.req.valid("json");
 
-      const shift = await db
-        .insert(workShift)
+      const newShift = await db
+        .insert(shift)
         .values({
-          description,
+          name,
           maxClaims,
           start: new Date(start),
           end: new Date(end),
         })
         .returning();
 
-      return c.json(shift);
+      return c.json(newShift);
     }
   )
   .get("/claims", async (c) => {
