@@ -44,7 +44,7 @@ const ShiftDetails = () => {
   const fetchData = useCallback(async () => {
     if (!id) return;
     const token = sessionData?.session?.token;
-    const baseUrl = "http://192.168.178.80:3001/shifts";
+    const baseUrl = "http://localhost:3001/shifts";
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -68,7 +68,7 @@ const ShiftDetails = () => {
     setRemoving(userId);
     try {
       const token = sessionData?.session?.token;
-      const baseUrl = "http://192.168.178.80:3001/shifts";
+      const baseUrl = "http://localhost:3001/shifts";
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const res = await fetch(`${baseUrl}/${id}/claims/${userId}`, {
@@ -92,7 +92,7 @@ const ShiftDetails = () => {
     setClaiming(true);
     try {
       const token = sessionData?.session?.token;
-      const baseUrl = "http://192.168.178.80:3001/shifts";
+      const baseUrl = "http://localhost:3001/shifts";
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
@@ -118,7 +118,7 @@ const ShiftDetails = () => {
     setRemovingSelf(true);
     try {
       const token = sessionData?.session?.token;
-      const baseUrl = "http://192.168.178.80:3001/shifts";
+      const baseUrl = "http://localhost:3001/shifts";
       const headers: Record<string, string> = {};
       if (token) headers["Authorization"] = `Bearer ${token}`;
       const res = await fetch(`${baseUrl}/${id}/claims/${userId}`, {

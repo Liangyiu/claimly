@@ -72,7 +72,7 @@ const CreateShift = () => {
       //   setLoading(false);
       // }
 
-      const response = await fetch("http://192.168.178.80:3001/shifts", {
+      const response = await fetch("http://localhost:3001/shifts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
