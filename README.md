@@ -36,6 +36,19 @@ bun run dev
 
 This will start the Expo development server. You can then run the app on an emulator/simulator or on a physical device using the Expo Go app.
 
+## Mock Data & Test Users
+
+The project includes a pre-populated SQLite database (`backend/local.db`) with mock data, including test users. You can use the following credentials to log in:
+
+- **Test User**:
+
+  - **Email**: `testuser1@example.com`
+  - **Password**: `Test1234!`
+
+- **Test Admin**:
+  - **Email**: `testadmin1@example.com`
+  - **Password**: `Test1234!`
+
 ## Available Scripts
 
 ### Backend (`backend/package.json`)
