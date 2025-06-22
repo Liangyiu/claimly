@@ -4,6 +4,7 @@ import { auth } from "./lib/auth";
 import shifts from "./routes/shifts";
 import onError from "./middlewares/on-error";
 import { logger } from "./middlewares/pino-logger";
+import claims from "./routes/claims";
 
 const app = new Hono<{
   Variables: {
@@ -48,6 +49,7 @@ app.use(
 );
 
 app.route("/shifts", shifts);
+app.route("/claims", claims);
 
 app.get("/", (c) => {
   return c.text("Hello Hono!");

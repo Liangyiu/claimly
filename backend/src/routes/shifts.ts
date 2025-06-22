@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { auth } from "../lib/auth";
 import { db } from "../lib/db";
-import { and, eq, gte, lt } from "drizzle-orm";
-import { shiftClaims, user, shift } from "../lib/db/schema";
+import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { shiftClaims, shift } from "../lib/db/schema";
 import { z } from "zod";
 import { zValidator } from "../middlewares/validator-wrapper";
 
@@ -32,12 +32,18 @@ const shifts = new Hono<{
       const now = new Date();
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-      // get shifts for the next week
+      // get shifts for the next week, including claims count
       const shifts = await db.query.shift.findMany({
         limit,
         offset,
         where: and(gte(shift.start, now), lt(shift.start, nextWeek)),
         orderBy: (shifts) => shifts.start,
+        extras: {
+          claimsCount:
+            sql<number>`(SELECT COUNT(*) FROM shift_claims WHERE shift_claims.shift_id = ${shift.id})`.as(
+              "claimsCount"
+            ),
+        },
       });
 
       // get total number of shifts
@@ -59,10 +65,17 @@ const shifts = new Hono<{
       });
     }
 
+    // For admin, include claims count for all shifts
     const shifts = await db.query.shift.findMany({
       limit,
       offset,
       orderBy: (shifts) => shifts.start,
+      extras: {
+        claimsCount:
+          sql`(SELECT COUNT(*) FROM shift_claims WHERE shift_claims.shift_id = ${shift.id})`.as(
+            "claimsCount"
+          ),
+      },
     });
 
     const total = await db.query.shift
@@ -91,6 +104,18 @@ const shifts = new Hono<{
     }
 
     return c.json(shiftData);
+  })
+  .get("/:id/claims", async (c) => {
+    const shiftId = c.req.param("id");
+
+    const claims = await db.query.shiftClaims.findMany({
+      where: eq(shiftClaims.shiftId, shiftId),
+      with: {
+        user: true,
+      },
+    });
+
+    return c.json(claims);
   })
   .post(
     "/",
@@ -125,17 +150,60 @@ const shifts = new Hono<{
       return c.json(newShift);
     }
   )
-  .get("/claims", async (c) => {
+  .delete("/:shiftId/claims/:userId", async (c) => {
     const user = c.get("user");
+    const userId = c.req.param("userId");
 
-    const claims = await db.query.shiftClaims.findMany({
-      where: eq(shiftClaims.userId, user!.id),
-      with: {
-        shift: true,
-      },
+    if (user?.role !== "admin" && user?.id !== userId) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    const shiftId = c.req.param("shiftId");
+
+    await db
+      .delete(shiftClaims)
+      .where(
+        and(eq(shiftClaims.shiftId, shiftId), eq(shiftClaims.userId, userId))
+      );
+
+    return c.json({ success: true });
+  })
+  .post("/:id/claims", async (c) => {
+    const user = c.get("user");
+    const shiftId = c.req.param("id");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    // Check if shift exists
+    const shiftData = await db.query.shift.findFirst({
+      where: eq(shift.id, shiftId),
     });
-
-    return c.json(claims);
+    if (!shiftData) {
+      return c.json({ error: "Shift not found" }, 404);
+    }
+    // Check if already claimed
+    const existingClaim = await db.query.shiftClaims.findFirst({
+      where: and(
+        eq(shiftClaims.shiftId, shiftId),
+        eq(shiftClaims.userId, user.id)
+      ),
+    });
+    if (existingClaim) {
+      return c.json({ error: "Already claimed" }, 400);
+    }
+    // Check if shift is full
+    const claimsCount = await db.query.shiftClaims.findMany({
+      where: eq(shiftClaims.shiftId, shiftId),
+    });
+    if (claimsCount.length >= shiftData.maxClaims) {
+      return c.json({ error: "Shift is full" }, 400);
+    }
+    // Insert claim
+    await db.insert(shiftClaims).values({
+      userId: user.id,
+      shiftId,
+      createdAt: new Date(),
+    });
+    return c.json({ success: true });
   });
 
 export default shifts;

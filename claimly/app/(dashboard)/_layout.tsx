@@ -9,7 +9,7 @@ const DashboardLayout = () => {
     <UserOnly>
       <Tabs>
         <Tabs.Screen
-          name="shifts"
+          name="shifts/index"
           options={{
             title: "Shifts",
             tabBarIcon: ({ color, size }) => (
@@ -22,7 +22,7 @@ const DashboardLayout = () => {
               if (sessionData?.user?.role === "admin") {
                 return (
                   <CreateShiftButton
-                    onPress={() => router.push("/create-shift")}
+                    onPress={() => router.push("/shifts/create")}
                   />
                 );
               }
@@ -41,9 +41,15 @@ const DashboardLayout = () => {
           }}
         />
         <Tabs.Screen
-          name="create-shift"
+          name="shifts/create"
           options={{
             title: "Create a new shift",
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="shifts/[id]"
+          options={{
             href: null,
           }}
         />
