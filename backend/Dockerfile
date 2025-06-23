@@ -25,7 +25,7 @@ FROM base AS release
 RUN mkdir -p src
 
 COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/src /src
+COPY --from=prerelease /usr/src/app/src src
 COPY --from=prerelease /usr/src/app/package.json .
 
 # Create a non-root user
