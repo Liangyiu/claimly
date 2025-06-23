@@ -34,6 +34,7 @@ COPY --from=prerelease /usr/src/app/local.db-shm .
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 hono
+RUN chown -R hono:nodejs /usr/src/app
 USER hono
 
 # Expose the port that your app runs on
