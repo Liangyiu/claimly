@@ -27,6 +27,9 @@ RUN mkdir -p src
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/src src
 COPY --from=prerelease /usr/src/app/package.json .
+COPY --from=prerelease /usr/src/app/local.db .
+COPY --from=prerelease /usr/src/app/local.db-wal .
+COPY --from=prerelease /usr/src/app/local.db-shm .
 
 # Create a non-root user
 RUN addgroup --system --gid 1001 nodejs
