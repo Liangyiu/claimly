@@ -32,7 +32,7 @@ RUN adduser --system --uid 1001 hono
 USER hono
 
 # Expose the port that your app runs on
-EXPOSE 3000
+EXPOSE 3001
 
 # Set environment to production
 ENV NODE_ENV=production
