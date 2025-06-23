@@ -3,7 +3,7 @@ import type { Session } from "better-auth";
 import type { shifts } from "../../../backend/src/routes/shifts";
 import type { claims } from "../../../backend/src/routes/claims";
 
-const BASE_URL = "http://localhost:3001";
+const BASE_URL = "https://api.cc-dev.llama.onl";
 
 type ApiPath = "shifts" | "claims";
 

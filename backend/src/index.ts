@@ -39,7 +39,7 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 app.use(
   "*",
   cors({
-    origin: ["http://localhost:3001", "claimly://"],
+    origin: ["http://localhost:3001", "claimly://", process.env.ORIGIN!],
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["POST", "GET", "OPTIONS"],
     exposeHeaders: ["Content-Length"],

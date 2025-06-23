@@ -72,7 +72,7 @@ const CreateShift = () => {
       //   setLoading(false);
       // }
 
-      const response = await fetch("http://localhost:3001/shifts", {
+      const response = await fetch("https://api.cc-dev.llama.onl/shifts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
