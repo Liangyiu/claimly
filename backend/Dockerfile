@@ -1,6 +1,9 @@
 # Use the official Bun image
-FROM oven/bun:1 as base
+FROM oven/bun:1.2-debian as base
 WORKDIR /usr/src/app
+
+# Add curl
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies into temp directory
 # This will cache them and speed up future builds
