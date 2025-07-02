@@ -11,6 +11,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  trustedOrigins: ["claimly://"],
+  trustedOrigins: ["claimly://", "http://localhost:3001", "http://localhost:8081"],
   plugins: [admin(), bearer()],
 });
